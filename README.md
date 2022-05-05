@@ -16,6 +16,12 @@ Modern rules:
 
 - It uses a bag of Tetrominos and randomly chooses one out of it until the bag is empty, then the bag gets filled again with one of each of the 7 Tetrominos. This ensures that the same Tetromino can not appear multiple times in sequence
 
+
+
+Also:
+- Level up by increasing score
+- Game Speed inceases on each level up
+- Score multiplier based on how many rows have been swept at once
 - Shows the next Tetromino at the top right corner
 - Hold a Tetromino (held Tetromino is shown in the top left corner)
 - Ghost Tetromino that shows where the current Tetromino would land
