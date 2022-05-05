@@ -1,5 +1,5 @@
 # Flutris
-A Retro Tetris as Flutter Package
+A Retro Tetris Game as Flutter Package
 
 <img src="shots/shot01.png" width="150" height="300" />
 <img src="shots/shot02.png" width="150" height="300" />
