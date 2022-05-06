@@ -39,7 +39,10 @@ dev_dependencies:
 # The following section is specific to Flutter.
 flutter:
   assets:
-    - assets/audio/
+    - assets/audio/gameover.mp3
+    - assets/audio/levelup.mp3
+    - assets/audio/row_sweep.mp3
+    - assets/audio/tetris.mp3
 
   fonts:
     - family: GameBoy

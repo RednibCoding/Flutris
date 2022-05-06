@@ -162,10 +162,10 @@ class AudioHandler {
   static bool musicOn = true;
   static AudioPlayer? _musicPlayer;
   static AudioPlayer? _soundPlayer;
-  static const String _musicFile = "audio/tetris.mp3";
-  static const String _rowSweepSoundFile = "audio/row_sweep.mp3";
-  static const String _gameoverSoundFile = "audio/gameover.mp3";
-  static const String _levelupSoundFile = "audio/levelup.mp3";
+  static const String _musicFile = "packages/flutris/assets/audio/tetris.mp3";
+  static const String _rowSweepSoundFile = "packages/flutris/assets/audio/row_sweep.mp3";
+  static const String _gameoverSoundFile = "packages/flutris/assets/audio/gameover.mp3";
+  static const String _levelupSoundFile = "packages/flutris/assets/audio/levelup.mp3";
 
   static void init() {
     _musicPlayer = AudioPlayer();
