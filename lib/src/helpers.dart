@@ -478,14 +478,14 @@ void removeFullRows() {
     Board.matrix.insert(0, List.filled(NUM_BLOCKS_X, 0));
     ++rowNum;
 
-    Player.score += scoreMultiplier * 10;
+    Player.score += scoreMultiplier * 100;
     scoreMultiplier *= 2;
     rowsRemoved++;
   }
 
   // Set player.level based on player.score
   var level = Player.level;
-  Player.level = logCeil(Player.score, 1.5);
+  Player.level = logCeil(Player.score, 1.8);
   if (Player.level > level) {
     AudioHandler.playLevelUpSound();
   } else {
@@ -558,7 +558,7 @@ void onTick(Timer t) {
   final dt = TimeHandler.elapsedTime - TimeHandler.lastTime;
   TimeHandler.lastTime = TimeHandler.elapsedTime;
   TimeHandler.dropCounter += dt;
-  if (TimeHandler.dropCounter > (TimeHandler.dropInterval / (Player.level * 0.6))) {
+  if (TimeHandler.dropCounter > (TimeHandler.dropInterval - (Player.level * 50))) {
     if (Player.currentPiece == null) return;
     movePlayerPieceDown();
     // Hack to prevent the app to loose focus for the RawKeyboardListener
