@@ -14,7 +14,7 @@ import 'package:just_audio/just_audio.dart';
 
 const TEXT_COLOR = Color.fromARGB(255, 15, 56, 15);
 const BACK_COLOR_DARK = Color.fromARGB(255, 125, 155, 15);
-const BACK_COLOR_LIGHT = Color.fromARGB(255, 155, 188, 15);
+const BACK_COLOR = Color.fromARGB(255, 155, 188, 15);
 const CASE_COLOR = Color.fromARGB(255, 170, 170, 170);
 
 const NUM_BLOCKS_X = 10;
@@ -166,6 +166,7 @@ class AudioHandler {
   static const String _rowSweepSoundFile = "packages/flutris/assets/audio/row_sweep.mp3";
   static const String _gameoverSoundFile = "packages/flutris/assets/audio/gameover.mp3";
   static const String _levelupSoundFile = "packages/flutris/assets/audio/levelup.mp3";
+  static const String _landSoundFile = "packages/flutris/assets/audio/land.mp3";
 
   static void init() {
     _musicPlayer = AudioPlayer();
@@ -189,6 +190,12 @@ class AudioHandler {
   static void playSweepSound() async {
     if (!soundOn) return;
     await _soundPlayer?.setAsset(_rowSweepSoundFile);
+    _soundPlayer?.play();
+  }
+
+  static void playLandSound() async {
+    if (!soundOn) return;
+    await _soundPlayer?.setAsset(_landSoundFile);
     _soundPlayer?.play();
   }
 
@@ -236,11 +243,11 @@ FocusNode keyboardFocusNode = FocusNode();
 
 void drawBlock(int x, int y, double blockWidth, double blockHeight, Canvas canvas, Color color) {
   final border = Paint()
-    ..color = BACK_COLOR_LIGHT
+    ..color = BACK_COLOR
     ..style = PaintingStyle.stroke
     ..strokeWidth = 2;
   final deco = Paint()
-    ..color = BACK_COLOR_LIGHT
+    ..color = BACK_COLOR
     ..style = PaintingStyle.stroke
     ..strokeWidth = 3;
   final paint = Paint()..color = TEXT_COLOR;
@@ -251,7 +258,7 @@ void drawBlock(int x, int y, double blockWidth, double blockHeight, Canvas canva
 
 void drawBlockSimple(int x, int y, double blockWidth, double blockHeight, Canvas canvas, Color color) {
   final border = Paint()
-    ..color = BACK_COLOR_LIGHT
+    ..color = BACK_COLOR
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1;
   final paint = Paint()..color = TEXT_COLOR;
@@ -259,9 +266,9 @@ void drawBlockSimple(int x, int y, double blockWidth, double blockHeight, Canvas
   canvas.drawRect(Rect.fromLTWH(x * blockWidth, y * blockWidth, blockWidth, blockHeight), border);
 }
 
-void drawOutlinedBlock(int x, int y, double blockWidth, double blockHeight, Canvas canvas, Color color) {
+void drawGhostBlock(int x, int y, double blockWidth, double blockHeight, Canvas canvas, Color color) {
   final border = Paint()
-    ..color = BACK_COLOR_LIGHT
+    ..color = BACK_COLOR
     ..style = PaintingStyle.stroke
     ..strokeWidth = 1;
   final paint = Paint()..color = BACK_COLOR_DARK;
@@ -275,7 +282,7 @@ void drawMatrix(Matrix matrix, canvas, double blockWidth, double blockHeight, Po
       if (matrix[row][x] != 0) {
         final color = colors[matrix[row][x]];
         if (ghost) {
-          drawOutlinedBlock(x + offset.x, row + offset.y, blockWidth, blockHeight, canvas, color);
+          drawGhostBlock(x + offset.x, row + offset.y, blockWidth, blockHeight, canvas, color);
         } else {
           if (blockWidth < 20) {
             drawBlockSimple(x + offset.x, row + offset.y, blockWidth, blockHeight, canvas, color);
@@ -391,6 +398,9 @@ void landPiece(Matrix? piece, Pos? pos) {
     pos.y++;
   }
   pos.y--;
+  if (piece == Player.currentPiece) {
+    AudioHandler.playLandSound();
+  }
 }
 
 void rotate(dir) {
@@ -469,15 +479,15 @@ void removeFullRows() {
     rowsRemoved++;
   }
 
-  if (rowsRemoved > 0) {
-    AudioHandler.playSweepSound();
-  }
-
   // Set player.level based on player.score
   var level = Player.level;
   Player.level = logCeil(Player.score, 1.5);
   if (Player.level > level) {
     AudioHandler.playLevelUpSound();
+  } else {
+    if (rowsRemoved > 0) {
+      AudioHandler.playSweepSound();
+    }
   }
 }
 
@@ -570,7 +580,7 @@ class Flutris extends StatefulWidget {
   State<Flutris> createState() => _TetrisState();
 }
 
-class _TetrisState extends State<Flutris> {
+class _TetrisState extends State<Flutris> with WidgetsBindingObserver {
   @override
   void initState() {
     AudioHandler.init();
@@ -581,12 +591,24 @@ class _TetrisState extends State<Flutris> {
       });
     });
     super.initState();
+    WidgetsBinding.instance?.addObserver(this);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
     disposeFlutris();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      resetGame();
+    }
+    if (state == AppLifecycleState.resumed) {
+      resetGame();
+    }
   }
 
   @override
@@ -629,7 +651,7 @@ class _TetrisState extends State<Flutris> {
           child: LayoutBuilder(
             builder: (context, constraints) => Container(
               decoration: BoxDecoration(
-                color: BACK_COLOR_LIGHT,
+                color: BACK_COLOR,
                 border: Border.all(
                   color: TEXT_COLOR,
                   width: 1,
@@ -740,7 +762,7 @@ class _TetrisState extends State<Flutris> {
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            color: BACK_COLOR_LIGHT,
+                            color: BACK_COLOR,
                             border: Border.all(
                               color: TEXT_COLOR,
                               width: 2,
@@ -815,8 +837,8 @@ class _TetrisState extends State<Flutris> {
                                 decoration: const BoxDecoration(color: TEXT_COLOR),
                                 child: Center(
                                     child: Text("Start",
-                                        style: TextStyle(
-                                            fontFamily: "GameBoy", package: "flutris", color: BACK_COLOR_LIGHT, fontSize: widget.height * 0.04))),
+                                        style:
+                                            TextStyle(fontFamily: "GameBoy", package: "flutris", color: BACK_COLOR, fontSize: widget.height * 0.04))),
                               ),
                             ),
                           ],
@@ -850,10 +872,7 @@ class _TetrisState extends State<Flutris> {
                                       child: Center(
                                           child: Text("Start",
                                               style: TextStyle(
-                                                  fontFamily: "GameBoy",
-                                                  package: "flutris",
-                                                  color: BACK_COLOR_LIGHT,
-                                                  fontSize: widget.height * 0.04))),
+                                                  fontFamily: "GameBoy", package: "flutris", color: BACK_COLOR, fontSize: widget.height * 0.04))),
                                     ),
                                   ),
                                 ),

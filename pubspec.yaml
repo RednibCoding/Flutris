@@ -42,6 +42,7 @@ flutter:
     - assets/audio/gameover.mp3
     - assets/audio/levelup.mp3
     - assets/audio/row_sweep.mp3
+    - assets/audio/land.mp3
     - assets/audio/tetris.mp3
 
   fonts:
