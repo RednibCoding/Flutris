@@ -25,6 +25,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  just_audio: ^0.9.21
 
 dev_dependencies:
   flutter_test:
@@ -36,6 +38,9 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
+  assets:
+    - assets/audio/
+
   fonts:
     - family: GameBoy
       fonts:

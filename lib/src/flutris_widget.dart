@@ -3,10 +3,10 @@
 import 'dart:async';
 import 'dart:math';
 
-// import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 
 // #####################################################################################
 //     Constants
@@ -157,11 +157,78 @@ class TouchHandler {
   }
 }
 
-FocusNode keyboardFocusNode = FocusNode();
+class AudioHandler {
+  static bool soundOn = true;
+  static bool musicOn = true;
+  static AudioPlayer? _musicPlayer;
+  static AudioPlayer? _soundPlayer;
+  static const String _musicFile = "audio/tetris.mp3";
+  static const String _rowSweepSoundFile = "audio/row_sweep.mp3";
+  static const String _gameoverSoundFile = "audio/gameover.mp3";
+  static const String _levelupSoundFile = "audio/levelup.mp3";
 
-// Audio
-// AudioPlayer? audioPlayer;
-// Uint8List? tetrisMusic;
+  static void init() {
+    _musicPlayer = AudioPlayer();
+    _musicPlayer?.setLoopMode(LoopMode.all);
+    _soundPlayer = AudioPlayer();
+    _soundPlayer?.setLoopMode(LoopMode.off);
+  }
+
+  static setFlags({bool? soundOn, bool? musicOn}) {
+    AudioHandler.soundOn = soundOn ?? AudioHandler.soundOn;
+    AudioHandler.musicOn = musicOn ?? AudioHandler.musicOn;
+  }
+
+  static void playMusic() async {
+    if (!musicOn) return;
+    if ((_musicPlayer?.playing ?? true)) return;
+    await _musicPlayer?.setAsset(_musicFile);
+    _musicPlayer?.play();
+  }
+
+  static void playSweepSound() async {
+    if (!soundOn) return;
+    await _soundPlayer?.setAsset(_rowSweepSoundFile);
+    _soundPlayer?.play();
+  }
+
+  static void playGameoverSound() async {
+    if (!soundOn) return;
+    await _soundPlayer?.setAsset(_gameoverSoundFile);
+    _soundPlayer?.play();
+  }
+
+  static void playLevelUpSound() async {
+    if (!soundOn) return;
+    await _soundPlayer?.setAsset(_levelupSoundFile);
+    _soundPlayer?.play();
+  }
+
+  static void pauseMusic() async {
+    await _musicPlayer?.pause();
+  }
+
+  static void stopMusic() async {
+    if ((_musicPlayer?.playing ?? false)) {
+      await _musicPlayer?.stop();
+    }
+  }
+
+  static void reset() async {
+    if ((_musicPlayer?.playing ?? false)) {
+      await _musicPlayer?.stop();
+    }
+  }
+
+  static void dispose() {
+    _musicPlayer?.stop();
+    _musicPlayer?.dispose();
+    _soundPlayer?.stop();
+    _soundPlayer?.dispose();
+  }
+}
+
+FocusNode keyboardFocusNode = FocusNode();
 
 // #####################################################################################
 //     Helpers
@@ -229,8 +296,11 @@ void drawPlayerPiece(Canvas canvas, double blockWidth, double blockHeight) {
 
 void drawGhostPiece(Canvas canvas, double blockWidth, double blockHeight) {
   if (Player.ghostPiece != null) {
+    Player.ghostPiecePos.y = Player.currentPiecePos.y;
     landPiece(Player.ghostPiece, Player.ghostPiecePos);
-    drawMatrix(Player.ghostPiece!, canvas, blockWidth, blockHeight, Player.ghostPiecePos, ghost: true);
+    if (Player.ghostPiecePos.y > Player.currentPiecePos.y) {
+      drawMatrix(Player.ghostPiece!, canvas, blockWidth, blockHeight, Player.ghostPiecePos, ghost: true);
+    }
   }
 }
 
@@ -317,7 +387,6 @@ void movePlayerPieceDown() {
 
 void landPiece(Matrix? piece, Pos? pos) {
   if (piece == null || pos == null) return;
-  pos.y = 0;
   while (!isColliding(piece, pos)) {
     pos.y++;
   }
@@ -375,11 +444,14 @@ void checkGameOver() {
   if (isColliding(Player.currentPiece, Player.currentPiecePos)) {
     Player.isGameOver = true;
     Player.isPlaying = false;
+    AudioHandler.stopMusic();
+    AudioHandler.playGameoverSound();
   }
 }
 
 void removeFullRows() {
   var scoreMultiplier = 1;
+  var rowsRemoved = 0;
   outer:
   for (var rowNum = Board.matrix.length - 1; rowNum > 0; --rowNum) {
     for (var i = 0; i < Board.matrix[rowNum].length; ++i) {
@@ -394,10 +466,19 @@ void removeFullRows() {
 
     Player.score += scoreMultiplier * 10;
     scoreMultiplier *= 2;
+    rowsRemoved++;
+  }
+
+  if (rowsRemoved > 0) {
+    AudioHandler.playSweepSound();
   }
 
   // Set player.level based on player.score
+  var level = Player.level;
   Player.level = logCeil(Player.score, 1.5);
+  if (Player.level > level) {
+    AudioHandler.playLevelUpSound();
+  }
 }
 
 int logCeil(int x, double base) {
@@ -436,9 +517,11 @@ void resetGame() {
   Player.reset();
   Board.reset();
   TimeHandler.reset();
+  AudioHandler.reset();
 }
 
 void startNewGame() {
+  AudioHandler.playMusic();
   resetGame();
   Player.isPlaying = true;
   nextPiece();
@@ -446,6 +529,7 @@ void startNewGame() {
 
 void disposeFlutris() {
   resetGame();
+  AudioHandler.dispose();
   TimeHandler.dispose();
   if (kDebugMode) {
     print("Game disposed");
@@ -474,9 +558,11 @@ class Flutris extends StatefulWidget {
   double width = 0;
   double boardWidth = 0;
   double height = 0;
-  Flutris({Key? key, required size}) : super(key: key) {
-    height = size;
-    width = size;
+  bool muteSound;
+  bool muteMusic;
+  Flutris({Key? key, required sizeHeight, this.muteSound = false, this.muteMusic = false}) : super(key: key) {
+    height = sizeHeight;
+    width = sizeHeight;
     boardWidth = width * 0.75;
   }
 
@@ -487,6 +573,8 @@ class Flutris extends StatefulWidget {
 class _TetrisState extends State<Flutris> {
   @override
   void initState() {
+    AudioHandler.init();
+    AudioHandler.setFlags(soundOn: !widget.muteSound, musicOn: !widget.muteMusic);
     TimeHandler.timer = Timer.periodic(Duration(milliseconds: TimeHandler.tickDelay), (timer) {
       setState(() {
         onTick(timer);
@@ -509,6 +597,7 @@ class _TetrisState extends State<Flutris> {
     return WillPopScope(
       onWillPop: () async {
         resetGame();
+        disposeFlutris();
         return true;
       },
       child: RawKeyboardListener(
