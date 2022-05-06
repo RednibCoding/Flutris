@@ -125,5 +125,7 @@ class _MainPageState extends State<MainPage> {
 
 ```
 
+# Note
 
+You have to call `disposeFlutris` whenever you pop the scope where Flutris is running in. Otherwise the game timer keeps running and will try to call setState on the Flutris widget that is not present in the widget tree anymore. This will cause a crash.
 

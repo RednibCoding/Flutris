@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:math';
 
 // import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -121,6 +122,13 @@ class TimeHandler {
   static int elapsedTime = 0;
   static int dropInterval = 800;
   static int tickDelay = 33;
+  static Timer? timer;
+
+  static void dispose() {
+    reset();
+    timer?.cancel();
+    timer = null;
+  }
 
   static void reset() {
     dropCounter = 0;
@@ -399,18 +407,6 @@ int logCeil(int x, double base) {
   return intResult > 1 ? intResult : 1;
 }
 
-void resetGame() {
-  Player.reset();
-  Board.reset();
-  TimeHandler.reset();
-}
-
-void startNewGame() {
-  resetGame();
-  Player.isPlaying = true;
-  nextPiece();
-}
-
 void drawPiecePreview(Canvas canvas, Matrix? piece, double blockWidth, double blockHeight, Pos pos) {
   if (piece == null) return;
   drawMatrix(piece, canvas, blockWidth, blockHeight, pos);
@@ -434,6 +430,26 @@ void holdPiece() {
   }
   Player.ghostPiece = Matrix.from(Player.currentPiece!);
   Player.canHoldPiece = false;
+}
+
+void resetGame() {
+  Player.reset();
+  Board.reset();
+  TimeHandler.reset();
+}
+
+void startNewGame() {
+  resetGame();
+  Player.isPlaying = true;
+  nextPiece();
+}
+
+void disposeFlutris() {
+  resetGame();
+  TimeHandler.dispose();
+  if (kDebugMode) {
+    print("Game disposed");
+  }
 }
 
 // #####################################################################################
@@ -471,12 +487,18 @@ class Flutris extends StatefulWidget {
 class _TetrisState extends State<Flutris> {
   @override
   void initState() {
-    Timer.periodic(Duration(milliseconds: TimeHandler.tickDelay), (timer) {
+    TimeHandler.timer = Timer.periodic(Duration(milliseconds: TimeHandler.tickDelay), (timer) {
       setState(() {
         onTick(timer);
       });
     });
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    disposeFlutris();
+    super.dispose();
   }
 
   @override
