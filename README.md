@@ -116,7 +116,7 @@ class _MainPageState extends State<MainPage> {
           // The size determines the size of the game area
           // Here we made it responsive bei using a LayoutBuilder
           // and its constraints
-          child: Center(child: Flutris(size: constraints.maxHeight)),
+          child: Center(child: Flutris(size: constraints.maxHeight, muteSound: false, muteMusic: false)),
         ),
       ),
     );
