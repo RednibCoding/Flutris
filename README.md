@@ -1,8 +1,11 @@
 # Flutris
 A Retro Tetris Game as Flutter Package
 
+
 <img src="shots/shot01.png" width="150" height="300" />
 <img src="shots/shot02.png" width="150" height="300" />
+<img src="shots/shot03.png" width="150" height="300" />
+<img src="shots/shot04.png" width="150" height="300" />
 
 ## Behind the scenes
 The game is written by using a CustomPainter widget to directly draw to the Canvas pixelwise, so it is more performant than using a lot of widgets for each Tetromino.
