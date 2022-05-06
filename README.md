@@ -32,11 +32,13 @@ Also:
 
 ## Controls
 Keyboard:
-- Arrow key 🠔🠖: move the Tetromino left/right one space
-- Arrow key 🠗: move the Tetromino down one space
-- Arrow key 🠕: rotate the Tetromino clockwise
-- Shift + Arrow key 🠗 : immediately land the Tetromino at the bottom
-- Space: Hold the current Tetromino
+- Arrow key left/right : move the Tetromino left/right one space
+- Arrow key down: move the Tetromino down one space
+- Arrow key up: rotate the Tetromino clockwise
+- Shift + Arrow key down : immediately land the Tetromino at the bottom
+- Control: Hold the current Tetromino
+- Space: pause game
+- Esc: exit
 
 Touch:
 - Swipe left/right: move the Tetromino left/right one space
@@ -44,6 +46,8 @@ Touch:
 - Tap: rotate the Tetromino clockwise
 - Long Tap : immediately land the Tetromino at the bottom
 - Tab the Hold Area at the top left corner: Hold the current Tetromino
+- Tab the Next Area at the top right corner: pause game
+- Back: exit 
 
 
 ## Use this package as a library
@@ -115,11 +119,11 @@ class _MainPageState extends State<MainPage> {
         builder: (context, constraints) => SizedBox(
           width: constraints.maxWidth,
           height: constraints.maxHeight,
-          // All there is needed is to use the Flutris widget
+          // Use Flutris
           // The size determines the size of the game area
-          // Here we made it responsive bei using a LayoutBuilder
+          // Here we made it responsive by using a LayoutBuilder
           // and its constraints
-          child: Center(child: Flutris(size: constraints.maxHeight, muteSound: false, muteMusic: false)),
+          child: Center(child: Flutris(sizeHeight: constraints.maxHeight, muteSound: false, muteMusic: false)),
         ),
       ),
     );
