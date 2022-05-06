@@ -5,7 +5,7 @@ A Retro Tetris Game as Flutter Package
 <img src="shots/shot02.png" width="150" height="300" />
 
 ## Behind the scenes
-The game is written by using a CustomPainter widget so it is more performant than using a lot of widgets for each Tetromino.
+The game is written by using a CustomPainter widget to directly draw to the Canvas, so it is more performant than using a lot of widgets for each Tetromino.
 
 The game is capped at 30 frames per seconds, thats more than enough
 for a tetris game. That's more energy efficient than running it on high fps just for the sake of having high fps.
